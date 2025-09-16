@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deteksi Mengantuk & Mood — Mobile Full</title>
+<title>Deteksi Mengantuk & Mood — Mobile Full (No Mirror)</title>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
@@ -31,7 +31,7 @@ label{font-size:13px;color:var(--muted);}
 </style>
 </head>
 <body>
-<h2>Deteksi Mengantuk & Mood — Mobile Full</h2>
+<h2>Deteksi Mengantuk & Mood — Mobile Full (No Mirror)</h2>
 
 <div class="card">
   <canvas id="canvas"></canvas>
@@ -140,6 +140,7 @@ function updateGraph(){
 function onResults(results){
   ctx.save();
   ctx.clearRect(0,0,canvas.width,canvas.height);
+  // TANPA MIRROR
   ctx.drawImage(results.image,0,0,canvas.width,canvas.height);
 
   if(results.multiFaceLandmarks && results.multiFaceLandmarks.length>0){
