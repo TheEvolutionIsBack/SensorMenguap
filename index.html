@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deteksi Mengantuk & Mood — Mobile Full (No Mirror)</title>
+<title>Deteksi Mengantuk & Mood Sempurna — Mirror Futuristik</title>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
@@ -13,25 +13,27 @@
   --green:#22c55e; --red:#ef4444; --blue:#3b82f6;
 }
 body{margin:0; font-family:Inter,system-ui,Helvetica,Arial; background:linear-gradient(180deg,var(--bg),#041423); color:#e6f0f5; display:flex; flex-direction:column; align-items:center; padding:12px;}
-h2{text-align:center;margin-bottom:12px;font-size:1.4em;}
-.card{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 8px 20px rgba(2,8,23,0.6); border:1px solid rgba(255,255,255,0.02); margin-bottom:16px; width:100%;}
-canvas{border-radius:12px; background:#000; width:100%; height:auto; max-height:400px;}
-.controls{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; justify-content:center;}
-button{padding:10px 12px; border-radius:10px; border:none; cursor:pointer; background:var(--accent); color:#021018; font-weight:600; flex:1;}
+h2{text-align:center;margin-bottom:12px;font-size:1.5em; color:var(--accent);}
+.card{background:var(--card); border-radius:16px; padding:16px; box-shadow:0 8px 25px rgba(2,8,23,0.6); border:1px solid rgba(255,255,255,0.02); margin-bottom:16px; width:100%; max-width:700px;}
+canvas{border-radius:16px; background:#000; width:100%; height:auto; max-height:480px; transform:scaleX(-1);}
+.controls{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; justify-content:center;}
+button{padding:10px 14px; border-radius:12px; border:none; cursor:pointer; background:var(--accent); color:#021018; font-weight:700; flex:1; transition:0.2s;}
+button:hover{background:#0fb5c8;}
 .sliderBox{margin-top:12px;}
 label{font-size:13px;color:var(--muted);}
 #status{margin-top:6px; font-size:14px; text-align:center;}
-#notification{margin-top:12px; font-size:18px; text-align:center;}
-.badge{padding:4px 8px; border-radius:8px; font-weight:600; display:inline-block; margin-top:6px;}
+#notification{margin-top:12px; font-size:18px; text-align:center; font-weight:700;}
+.badge{padding:6px 12px; border-radius:12px; font-weight:700; display:inline-block; margin-top:6px;}
 .bahagia{background:var(--green); color:#021018;}
 .sedih{background:var(--blue); color:#fff;}
 .marah{background:var(--red); color:#fff;}
-#graph{margin-top:12px; height:80px; width:100%; background:#0c1624; border-radius:8px; overflow:hidden; position:relative;}
-.bar{position:absolute; bottom:0; width:2px; background:var(--accent);}
+#graph{margin-top:16px; height:100px; width:100%; background:#0c1624; border-radius:12px; overflow:hidden; position:relative;}
+.bar{position:absolute; bottom:0; width:3px; background:var(--accent);}
+.landmark{position:absolute; width:4px; height:4px; background:yellow; border-radius:50%; pointer-events:none;}
 </style>
 </head>
 <body>
-<h2>Deteksi Mengantuk & Mood — Mobile Full (No Mirror)</h2>
+<h2>Deteksi Mengantuk & Mood Sempurna — Mirror Futuristik</h2>
 
 <div class="card">
   <canvas id="canvas"></canvas>
@@ -59,31 +61,21 @@ label{font-size:13px;color:var(--muted);}
 
 <div class="card">
   <h3>Ekspresi & Mood</h3>
-  <div id="moodInfo">
-    <p>Belum ada deteksi...</p>
-  </div>
+  <div id="moodInfo"><p>Belum ada deteksi...</p></div>
 </div>
 
 <script>
-let canvas = document.getElementById('canvas');
-let ctx = canvas.getContext('2d');
-let videoElem = document.createElement('video'); 
+let canvas=document.getElementById('canvas');
+let ctx=canvas.getContext('2d');
+let videoElem=document.createElement('video');
 videoElem.width=640; videoElem.height=480;
 videoElem.autoplay=true; videoElem.playsInline=true;
-videoElem.style.display='none';
 
-let camera = null;
-let faceMesh = null;
-
-let cooldown=false;
-let COOLDOWN_MS=7000;
-let MAR_HISTORY=[], EAR_HISTORY=[];
-let HISTORY_SIZE=30;
-let MAR_THRESHOLD=0.6;
-let EAR_THRESHOLD=0.25;
-let FRAMES_TO_TRIGGER=10;
-let lastMood=null;
-let sleepyStart=null;
+let camera=null, faceMesh=null;
+let cooldown=false, COOLDOWN_MS=7000;
+let MAR_HISTORY=[], EAR_HISTORY=[], HISTORY_SIZE=50;
+let MAR_THRESHOLD=0.6, EAR_THRESHOLD=0.25, FRAMES_TO_TRIGGER=10;
+let lastMood=null, sleepyStart=null;
 
 const graphDiv=document.getElementById('graph');
 const moodDiv=document.getElementById('moodInfo');
@@ -103,7 +95,6 @@ function eyeAspectRatio(landmarks){
   const L1=landmarks[159], L2=landmarks[145], L3=landmarks[33], L4=landmarks[133];
   return Math.hypot(L1.x-L2.x,L1.y-L2.y)/Math.hypot(L3.x-L4.x,L3.y-L4.y);
 }
-
 function detectMood(landmarks){
   const leftMouth=landmarks[61], rightMouth=landmarks[291];
   const mouthSlope=(rightMouth.y-leftMouth.y)/(rightMouth.x-leftMouth.x);
@@ -114,70 +105,72 @@ function detectMood(landmarks){
   if(mouthSlope>0.03 && browDiff>=-0.01) return {mood:'Sedih', text:'Sepertinya sedang sedih, semoga hari Anda membaik.', className:'sedih'};
   return null;
 }
-
 function checkYawning(){ return MAR_HISTORY.filter(m=>m>MAR_THRESHOLD).length>=FRAMES_TO_TRIGGER; }
 function checkEyesClosed(){ return EAR_HISTORY.filter(e=>e<EAR_THRESHOLD).length>=FRAMES_TO_TRIGGER; }
-
 function updateGraph(){
   graphDiv.innerHTML='';
   MAR_HISTORY.forEach((m,i)=>{
     const bar=document.createElement('div');
     bar.className='bar';
-    bar.style.left=i*2+'px';
-    bar.style.height=Math.min(m*200,80)+'px';
+    bar.style.left=i*3+'px';
+    bar.style.height=Math.min(m*250,100)+'px';
     graphDiv.appendChild(bar);
   });
   EAR_HISTORY.forEach((e,i)=>{
     const bar=document.createElement('div');
     bar.className='bar';
-    bar.style.left=i*2+'px';
-    bar.style.height=Math.min(e*200,80)+'px';
+    bar.style.left=i*3+'px';
+    bar.style.height=Math.min(e*250,100)+'px';
     bar.style.background='#ef4444';
     graphDiv.appendChild(bar);
   });
 }
+function drawLandmarks(landmarks){
+  ctx.fillStyle='yellow';
+  landmarks.forEach(p=>{
+    ctx.beginPath();
+    ctx.arc(p.x*canvas.width,p.y*canvas.height,2,0,2*Math.PI);
+    ctx.fill();
+  });
+}
 
 function onResults(results){
-  ctx.save();
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  // TANPA MIRROR
+  ctx.save();
+  ctx.translate(canvas.width,0);
+  ctx.scale(-1,1);
   ctx.drawImage(results.image,0,0,canvas.width,canvas.height);
+  ctx.restore();
 
   if(results.multiFaceLandmarks && results.multiFaceLandmarks.length>0){
     const landmarks=results.multiFaceLandmarks[0];
+    drawLandmarks(landmarks.map(l=>({x:l.x,y:l.y})));
     const mar=mouthAspectRatio(landmarks);
     const ear=eyeAspectRatio(landmarks);
     MAR_HISTORY.push(mar); if(MAR_HISTORY.length>HISTORY_SIZE) MAR_HISTORY.shift();
     EAR_HISTORY.push(ear); if(EAR_HISTORY.length>HISTORY_SIZE) EAR_HISTORY.shift();
-
     updateGraph();
 
     const eyesClosed=checkEyesClosed();
     const yawning=checkYawning();
     const isSleepy=eyesClosed||yawning;
-
-    // Track start time sleepy
     if(isSleepy){
       if(!sleepyStart) sleepyStart=Date.now();
       else if(Date.now()-sleepyStart>=3000 && !cooldown){
         notification.textContent='😴 Mengantuk terdeteksi!';
         speak("Anda Terdeteksi Mengantuk, Istirahat dulu sayang");
-        cooldown=true;
-        setTimeout(()=>{ cooldown=false; }, COOLDOWN_MS);
+        cooldown=true; setTimeout(()=>{ cooldown=false; }, COOLDOWN_MS);
       }
     } else { sleepyStart=null; notification.textContent=''; }
 
-    // Mood
     const moodData=detectMood(landmarks);
     if(moodData && moodData.mood!==lastMood && !cooldown){
       moodDiv.innerHTML=`<span class="badge ${moodData.className}">${moodData.text}</span>`;
       speak(moodData.text);
       lastMood=moodData.mood;
-      cooldown=true;
-      setTimeout(()=>{ cooldown=false; }, COOLDOWN_MS);
+      cooldown=true; setTimeout(()=>{ cooldown=false; }, COOLDOWN_MS);
     }
   }
-  ctx.restore();
 }
 
 // Slider binding
@@ -185,30 +178,24 @@ document.getElementById('earSlider').oninput=function(){ EAR_THRESHOLD=parseFloa
 document.getElementById('marSlider').oninput=function(){ MAR_THRESHOLD=parseFloat(this.value); document.getElementById('marVal').textContent=this.value; };
 document.getElementById('frameSlider').oninput=function(){ FRAMES_TO_TRIGGER=parseInt(this.value); document.getElementById('frameVal').textContent=this.value; };
 
-// Tombol start/stop
-document.getElementById('startBtn').onclick = async ()=>{
-  faceMesh = new FaceMesh({locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
+// Tombol start/stop/toggle
+document.getElementById('startBtn').onclick=async()=>{
+  faceMesh=new FaceMesh({locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
   faceMesh.setOptions({maxNumFaces:1, refineLandmarks:true, minDetectionConfidence:0.7, minTrackingConfidence:0.5});
   faceMesh.onResults(onResults);
 
-  camera = new Camera(videoElem,{onFrame:async()=>{await faceMesh.send({image:videoElem});}, width:640, height:480});
+  camera=new Camera(videoElem,{onFrame:async()=>{await faceMesh.send({image:videoElem});}, width:640, height:480});
   camera.start();
   document.getElementById('status').textContent='Status: kamera aktif, menunggu deteksi...';
 }
-
-// Stop kamera
-document.getElementById('stopBtn').onclick = ()=>{
+document.getElementById('stopBtn').onclick=()=>{
   if(camera) camera.stop();
   document.getElementById('status').textContent='Status: kamera berhenti.';
   notification.textContent='';
-  MAR_HISTORY=[]; EAR_HISTORY=[]; lastMood=null;
-  sleepyStart=null;
+  MAR_HISTORY=[]; EAR_HISTORY=[]; lastMood=null; sleepyStart=null;
 }
-
-// Toggle kamera visible
-document.getElementById('toggleCam').onclick = ()=>{
-  if(videoElem.style.display==='none'){ videoElem.style.display='block'; } 
-  else{ videoElem.style.display='none'; }
+document.getElementById('toggleCam').onclick=()=>{
+  if(videoElem.style.display==='none'){ videoElem.style.display='block'; } else{ videoElem.style.display='none'; }
 }
 </script>
 </body>
