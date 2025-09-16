@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deteksi Mengantuk & Mood — Full</title>
+<title>Deteksi Mengantuk & Mood — Mobile Full</title>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
@@ -12,57 +12,55 @@
   --bg:#071226; --card:#0c1624; --muted:#9fb0c3; --accent:#06b6d4;
   --green:#22c55e; --red:#ef4444; --blue:#3b82f6;
 }
-body{margin:0; font-family:Inter,system-ui,Helvetica,Arial; background:linear-gradient(180deg,var(--bg),#041423); color:#e6f0f5; display:flex; flex-direction:column; align-items:center; padding:20px;}
-h2{text-align:center;margin-bottom:12px;}
-.wrap{display:grid; grid-template-columns:1fr 320px; gap:20px; width:100%; max-width:1100px;}
-.card{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 8px 30px rgba(2,8,23,0.6); border:1px solid rgba(255,255,255,0.02);}
-canvas{border-radius:12px; background:#000; width:100%; height:480px;}
-.controls{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
-button{padding:8px 12px; border-radius:8px; border:none; cursor:pointer; background:var(--accent); color:#021018; font-weight:600;}
-.sliderBox{margin-top:8px;}
+body{margin:0; font-family:Inter,system-ui,Helvetica,Arial; background:linear-gradient(180deg,var(--bg),#041423); color:#e6f0f5; display:flex; flex-direction:column; align-items:center; padding:12px;}
+h2{text-align:center;margin-bottom:12px;font-size:1.4em;}
+.card{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 8px 20px rgba(2,8,23,0.6); border:1px solid rgba(255,255,255,0.02); margin-bottom:16px; width:100%;}
+canvas{border-radius:12px; background:#000; width:100%; height:auto; max-height:400px;}
+.controls{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; justify-content:center;}
+button{padding:10px 12px; border-radius:10px; border:none; cursor:pointer; background:var(--accent); color:#021018; font-weight:600; flex:1;}
+.sliderBox{margin-top:12px;}
 label{font-size:13px;color:var(--muted);}
-#status{margin-top:6px; font-size:14px;}
-#notification{margin-top:12px; font-size:20px; text-align:center; position:relative;}
-.badge{padding:4px 8px; border-radius:8px; font-weight:600;}
+#status{margin-top:6px; font-size:14px; text-align:center;}
+#notification{margin-top:12px; font-size:18px; text-align:center;}
+.badge{padding:4px 8px; border-radius:8px; font-weight:600; display:inline-block; margin-top:6px;}
 .bahagia{background:var(--green); color:#021018;}
 .sedih{background:var(--blue); color:#fff;}
 .marah{background:var(--red); color:#fff;}
-#graph{margin-top:12px; height:100px; width:100%; background:#0c1624; border-radius:8px; overflow:hidden; position:relative;}
+#graph{margin-top:12px; height:80px; width:100%; background:#0c1624; border-radius:8px; overflow:hidden; position:relative;}
 .bar{position:absolute; bottom:0; width:2px; background:var(--accent);}
 </style>
 </head>
 <body>
-<h2>Deteksi Mengantuk & Mood — Full</h2>
-<div class="wrap">
-  <div class="card">
-    <canvas id="canvas"></canvas>
-    <div class="controls">
-      <button id="startBtn">Start Kamera</button>
-      <button id="stopBtn">Stop Kamera</button>
-      <button id="toggleCam">Toggle Kamera Visible</button>
-    </div>
-    <div class="sliderBox">
-      <label>Mata tertutup Threshold (EAR): <span id="earVal">0.25</span></label>
-      <input type="range" id="earSlider" min="0.15" max="0.35" step="0.01" value="0.25" style="width:100%;">
-    </div>
-    <div class="sliderBox">
-      <label>Menguap Threshold (MAR): <span id="marVal">0.6</span></label>
-      <input type="range" id="marSlider" min="0.4" max="0.8" step="0.01" value="0.6" style="width:100%;">
-    </div>
-    <div class="sliderBox">
-      <label>Frames Trigger: <span id="frameVal">10</span></label>
-      <input type="range" id="frameSlider" min="5" max="30" step="1" value="10" style="width:100%;">
-    </div>
-    <div id="status">Status: menunggu kamera...</div>
-    <div id="notification"></div>
-    <div id="graph"></div>
-  </div>
+<h2>Deteksi Mengantuk & Mood — Mobile Full</h2>
 
-  <div class="card">
-    <h3>Ekspresi & Mood</h3>
-    <div id="moodInfo">
-      <p>Belum ada deteksi...</p>
-    </div>
+<div class="card">
+  <canvas id="canvas"></canvas>
+  <div class="controls">
+    <button id="startBtn">Start Kamera</button>
+    <button id="stopBtn">Stop Kamera</button>
+    <button id="toggleCam">Toggle Kamera</button>
+  </div>
+  <div class="sliderBox">
+    <label>Mata tertutup Threshold (EAR): <span id="earVal">0.25</span></label>
+    <input type="range" id="earSlider" min="0.15" max="0.35" step="0.01" value="0.25" style="width:100%;">
+  </div>
+  <div class="sliderBox">
+    <label>Menguap Threshold (MAR): <span id="marVal">0.6</span></label>
+    <input type="range" id="marSlider" min="0.4" max="0.8" step="0.01" value="0.6" style="width:100%;">
+  </div>
+  <div class="sliderBox">
+    <label>Frames Trigger: <span id="frameVal">10</span></label>
+    <input type="range" id="frameSlider" min="5" max="30" step="1" value="10" style="width:100%;">
+  </div>
+  <div id="status">Status: menunggu kamera...</div>
+  <div id="notification"></div>
+  <div id="graph"></div>
+</div>
+
+<div class="card">
+  <h3>Ekspresi & Mood</h3>
+  <div id="moodInfo">
+    <p>Belum ada deteksi...</p>
   </div>
 </div>
 
@@ -85,6 +83,7 @@ let MAR_THRESHOLD=0.6;
 let EAR_THRESHOLD=0.25;
 let FRAMES_TO_TRIGGER=10;
 let lastMood=null;
+let sleepyStart=null;
 
 const graphDiv=document.getElementById('graph');
 const moodDiv=document.getElementById('moodInfo');
@@ -125,20 +124,19 @@ function updateGraph(){
     const bar=document.createElement('div');
     bar.className='bar';
     bar.style.left=i*2+'px';
-    bar.style.height=Math.min(m*200,100)+'px';
+    bar.style.height=Math.min(m*200,80)+'px';
     graphDiv.appendChild(bar);
   });
   EAR_HISTORY.forEach((e,i)=>{
     const bar=document.createElement('div');
     bar.className='bar';
     bar.style.left=i*2+'px';
-    bar.style.height=Math.min(e*200,100)+'px';
+    bar.style.height=Math.min(e*200,80)+'px';
     bar.style.background='#ef4444';
     graphDiv.appendChild(bar);
   });
 }
 
-let sleepyStart=null;
 function onResults(results){
   ctx.save();
   ctx.clearRect(0,0,canvas.width,canvas.height);
